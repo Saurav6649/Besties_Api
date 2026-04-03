@@ -9,7 +9,7 @@ import {
   PayloadInterface,
   SessionInterface,
 } from "../middleware/auth.middleware";
-import { downloadObject } from "../utils/S3";
+
 
 const accessTokenExpiry = "10m";
 type TokenType = "at" | "rt";
@@ -53,7 +53,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const user = await AuthModal.findOne({ email });
 
     if (!user)
-      throw TryError("nvalid username or password please try again", 404);
+      throw TryError("Invalid username or password please try again", 404);
 
     const isMatch = await bcrypt.compare(password, user.password);
 
@@ -65,7 +65,7 @@ export const loginUser = async (req: Request, res: Response) => {
       fullname: user.fullname,
       email: user.email,
       mobile: user.mobile,
-      image: user.image ? await downloadObject(user.image) : null,
+      image: user.image ?? null 
     };
 
     const { accessToken, refreshToken } = generateToken(payload);
@@ -135,9 +135,6 @@ export const refresh_token = async (req: SessionInterface, res: Response) => {
 
     // console.log("session", req.session);
 
-    req.session.image = req.session.image
-      ? await downloadObject(req.session.image)
-      : null;
     const { accessToken, refreshToken } = generateToken(req.session);
 
     await AuthModal.updateOne(
@@ -160,7 +157,8 @@ export const refresh_token = async (req: SessionInterface, res: Response) => {
 
 export const profilePicture = async (req: SessionInterface, res: Response) => {
   try {
-    const path = req.body.path;
+    // const path = req.body.path;
+     const path = `${process.env.S3_URL}/${req.body.path}`
 
     if (!path || !req.session)
       throw TryError("Invalid request path is required", 400);
@@ -172,30 +170,9 @@ export const profilePicture = async (req: SessionInterface, res: Response) => {
       { $set: { image: path } },
     );
 
-    const url = await downloadObject(path);
-    res.json({ image: url });
+    res.json({ image: path });
   } catch (err: unknown) {
     CatchError(err, res, "Invalid User");
   }
 };
-// export const profilePicture = async (req: SessionInterface, res: Response) => {
-//   try {
-//     const path = req.body?.path;
 
-//     if (!path || !req.session)
-//       throw TryError("Invalid request path is required", 400);
-
-//     // 🔥 FULL URL banao
-//     const imageUrl = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${path}`;
-
-//     // ✅ DB me full URL save karo
-//     await AuthModal.updateOne(
-//       { _id: req.session.id },
-//       { $set: { image: imageUrl } },
-//     );
-
-//     res.json({ image: imageUrl }); // direct bhejo
-//   } catch (err: unknown) {
-//     CatchError(err, res, "Invalid User");
-//   }
-// };

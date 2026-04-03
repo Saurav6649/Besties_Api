@@ -15,6 +15,8 @@ const conn = new S3Client({
   },
 });
 
+type ACLType = "private" | "public-read"
+
 export const isFileExist = async (path: string) => {
   try {
     const command = new HeadObjectCommand({
@@ -40,19 +42,14 @@ export const downloadObject = async (path: string, expiry: number = 60) => {
   return url;
 };
 
-export const uploadObject = async (
-  path: string,
-  type: string,
-  expiry: number = 60,
-) => {
-  const command = new PutObjectCommand({
-    Bucket: process.env.S3_BUCKET,
-    Key: path,
-    ContentType: type,
-  });
+export const uploadObject = async (path: string, type: string, acl: ACLType = "private")=>{
+    const command = new PutObjectCommand({
+        Bucket: process.env.S3_BUCKET,
+        Key: path,
+        ContentType: type,
+        ACL: acl
+    })
 
-  const url = await getSignedUrl(conn, command, { expiresIn: expiry });
-  return url;
-};
-
-
+    const url = await getSignedUrl(conn, command, {expiresIn: 60})
+    return url
+}
