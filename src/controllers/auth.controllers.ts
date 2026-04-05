@@ -11,10 +11,10 @@ import {
 } from "../middleware/auth.middleware";
 
 
-const accessTokenExpiry = "10m";
+const accessTokenExpiry = "7d";
 type TokenType = "at" | "rt";
-const TenMinInMs = 10 * 60 * 1000;
-const SevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+const TenMinInMs = (7 * 24 * 60 * 60) * 1000;
+const SevenDaysInMs = (7 * 24 * 60 * 60) * 1000;
 
 const generateToken = (payload: PayloadInterface) => {
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
