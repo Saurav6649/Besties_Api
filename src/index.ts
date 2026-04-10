@@ -17,6 +17,8 @@ import corsConfig from "./utils/corsConfig";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import StatusSocket from "./socket/StatusSocket";
+import ChatSocket from "./socket/chat.socket";
+import ChatRouter from "./routers/chat.router";
 
 const app = express();
 const server = createServer(app);
@@ -27,6 +29,7 @@ server.listen(process.env.PORT, () => {
 
 const io = new Server(server, { cors: corsConfig });
 StatusSocket(io);
+ChatSocket(io);
 
 app.use(cors(corsConfig));
 
@@ -40,7 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 //   }),
 // );
 app.use(cookieParser());
-
+app.use("/chat", ChatRouter);
 app.use("/api-doc", serve, setup(SwaggerConfig));
 app.use("/auth", Authrouter);
 app.use("/storage", AuthMiddleware, storageRouter);
