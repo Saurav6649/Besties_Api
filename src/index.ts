@@ -19,6 +19,7 @@ import { Server } from "socket.io";
 import StatusSocket from "./socket/StatusSocket";
 import ChatSocket from "./socket/chat.socket";
 import ChatRouter from "./routers/chat.router";
+import VideoSocket from "./socket/video.socket";
 
 const app = express();
 const server = createServer(app);
@@ -30,6 +31,7 @@ server.listen(process.env.PORT, () => {
 const io = new Server(server, { cors: corsConfig });
 StatusSocket(io);
 ChatSocket(io);
+VideoSocket(io);
 
 app.use(cors(corsConfig));
 
