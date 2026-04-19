@@ -20,6 +20,10 @@ import StatusSocket from "./socket/StatusSocket";
 import ChatSocket from "./socket/chat.socket";
 import ChatRouter from "./routers/chat.router";
 import VideoSocket from "./socket/video.socket";
+import TwilioRouter from "./routers/twilio.router";
+import PaymentRouter from "./routers/payment.router";
+import { webhook } from "./controllers/payment.controllers";
+import PostRouter from "./routers/post.router";
 
 const app = express();
 const server = createServer(app);
@@ -50,3 +54,9 @@ app.use("/api-doc", serve, setup(SwaggerConfig));
 app.use("/auth", Authrouter);
 app.use("/storage", AuthMiddleware, storageRouter);
 app.use("/friend", AuthMiddleware, friendRouter);
+app.use("/twilio", AuthMiddleware, TwilioRouter);
+app.use("/post", AuthMiddleware, PostRouter);
+app.use("/payment", AuthMiddleware, PaymentRouter);
+
+// webhook route
+app.post("/payment/webhook", webhook);
