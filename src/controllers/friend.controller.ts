@@ -17,11 +17,42 @@ export const addFriends = async (req: SessionInterface, res: Response) => {
 
 export const fetchFriends = async (req: SessionInterface, res: Response) => {
   try {
-    const user = req.session?.id;
+    const userId = req.session?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const friends = await FriendModel.find({
-      user,
-    }).populate("friend");
-    res.json(friends);
+      $or: [{ user: userId }, { friend: userId }],
+      status: "accepted", // 🔥 only accepted friends
+    })
+      .populate("friend")
+      .populate("user")
+      .lean();
+
+    const seen = new Set();
+
+    const modified = friends
+      .map((item: any) => {
+        const isUser = item.user._id.toString() === userId;
+        const friend = isUser ? item.friend : item.user;
+
+        // 🔥 duplicate remove
+        if (seen.has(friend._id.toString())) return null;
+        seen.add(friend._id.toString());
+
+        return {
+          _id: item._id,
+          friend,
+          status: item.status,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        };
+      })
+      .filter(Boolean);
+
+    res.json(modified);
   } catch (err) {
     CatchError(err, res, "Failed to fetch friends");
   }
