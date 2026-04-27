@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 export const addFriends = async (req: SessionInterface, res: Response) => {
   try {
     req.body.user = req.session?.id;
-    const friend = await FriendModel.create(req.body);
+    await FriendModel.create(req.body);
     res.json({ message: "Friend Request Sent " });
   } catch (err) {
     CatchError(err, res, "Failed to send friend request");
